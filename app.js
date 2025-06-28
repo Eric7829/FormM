@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
+    const clearSelectionBtn = document.getElementById('clear-selection-btn');
     const verifyBtn = document.getElementById('verify-btn');
     const restartBtn = document.getElementById('restart-btn');
 
@@ -180,6 +181,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // NEW function to clear the current selection
+    function clearCurrentSelection() {
+        const selectedInput = document.querySelector('input[name="answer"]:checked');
+        if (selectedInput) {
+            selectedInput.checked = false;
+        }
+        document.querySelectorAll('.option-label').forEach(label => {
+            label.classList.remove('selected');
+        });
+        userAnswers[currentQuestionIndex] = null;
+    }
+
+
     function updateProgress() {
         const progress = ((currentQuestionIndex + 1) / allQuestions.length) * 100;
         progressBar.style.width = `${progress}%`;
@@ -252,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startBtn.addEventListener('click', startQuiz);
     prevBtn.addEventListener('click', previousQuestion);
     nextBtn.addEventListener('click', nextQuestion);
+    clearSelectionBtn.addEventListener('click', clearCurrentSelection);
     verifyBtn.addEventListener('click', startVerification);
     restartBtn.addEventListener('click', () => location.reload());
 });

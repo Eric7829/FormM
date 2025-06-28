@@ -123,40 +123,60 @@ function findBestThetaForDichotomy(dichotomyName, answers, allQuestions) {
         return 0; // Return neutral theta for no answers.
     }
 
-    let bestTheta = 0;
-    let maxLogLikelihood = -Infinity;
+    // Prepare items with their parameters and user responses
+    const items = answeredQuestionIndices.map(qIndex => {
+        const params = itemParameters[qIndex];
+        const answer = answers[qIndex + 1];
+        const questionData = allQuestions.MBTI_Form_M[qIndex];
+        const userScoreKey = questionData.options[answer.choice].scoreKey;
 
-    for (let theta = -3.0; theta <= 3.0; theta += 0.05) {
-        let currentLogLikelihood = 0;
+        return {
+            a: params.params.a,
+            b: params.params.b,
+            u: userScoreKey
+        };
+    });
 
-        answeredQuestionIndices.forEach(qIndex => {
-            const params = itemParameters[qIndex];
-            const answer = answers[qIndex + 1];
-            const questionData = allQuestions.MBTI_Form_M[qIndex];
+    // Newton-Raphson settings
+    const maxIterations = 20;
+    const tolerance = 0.0001;
+    let theta = 0.0; // Initial estimate
 
-            // P(u=1|θ) - The probability of choosing the positive-keyed option.
-            const probPositive = probability(theta, params.params.a, params.params.b);
+    for (let iter = 0; iter < maxIterations; iter++) {
+        let gradient = 0.0;
+        let hessian = 0.0;
 
-            // **CHANGE:** Directly use the `scoreKey` from the chosen option.
-            const userScoreKey = questionData.options[answer.choice].scoreKey;
+        // Compute gradient and hessian
+        for (const item of items) {
+            const { a, b, u } = item;
+            const P = probability(theta, a, b);
+            const Q = 1 - P;
 
-            // **CHANGE:** Simplified logic. No more string comparisons or lookups.
-            if (userScoreKey === 1) {
-                // User chose the positive pole, so we use P(θ).
-                currentLogLikelihood += Math.log(probPositive || 1e-9);
-            } else { // userScoreKey === 0
-                // User chose the negative pole, so we use 1 - P(θ).
-                currentLogLikelihood += Math.log(1 - probPositive || 1e-9);
-            }
-        });
+            gradient += a * (u - P);
+            hessian += -a * a * P * Q;
+        }
 
-        if (currentLogLikelihood > maxLogLikelihood) {
-            maxLogLikelihood = currentLogLikelihood;
-            bestTheta = theta;
+        // Avoid division by zero and check convergence
+        if (Math.abs(hessian) < 1e-7) {
+            break;
+        }
+
+        const delta = gradient / hessian;
+        const newTheta = theta - delta;
+
+        // Clamp theta to [-3, 3] range
+        const clampedTheta = Math.max(-3, Math.min(3, newTheta));
+        const change = Math.abs(clampedTheta - theta);
+
+        theta = clampedTheta;
+        if (change < tolerance) {
+            break;
         }
     }
-    return bestTheta;
+
+    return theta;
 }
+
 
 /**
  * Main function to calculate MBTI results.

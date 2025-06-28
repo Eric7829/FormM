@@ -17,8 +17,9 @@
  * 2.  **Calibrated Item Parameters:**
  *     'a' and 'b' parameters for each of the 93 items are sourced from the
  *     `itemParameterMatrix.js`. These parameters are empirically derived and
- *     professionally calibrated based on external academic research (Van Zyl & Taylor, 2011),
- *     ensuring the reliability and validity of the results.
+ *     professionally calibrated based on the Factor Analysis Rotated Component Matrix
+ *     from the official "MBTI® Form M MANUAL SUPPLEMENT" (2009), ensuring the reliability
+ *     and validity of the results aligned with the instrument's design.
  *
  * 3.  **Maximum Likelihood Estimation (MLE) for Dichotomies:**
  *     For each of the four main MBTI dichotomies (E-I, S-N, T-F, J-P), the system
@@ -29,28 +30,40 @@
  *     for MBTI Form M scoring (MBTI Manual, p. 146). Facets are used for item
  *     construction and theoretical alignment, but are not individually scored.
  *
- * 4.  **`scoreKey` Notation for Response Direction:**
+ * 4.  **Reliability of MBTI Form M (from MBTI® Form M Manual Supplement, 2009, Table 7):**
+ *     - **Cronbach's Alpha (Internal Consistency):**
+ *       - E-I: .91
+ *       - S-N: .92
+ *       - T-F: .91
+ *       - J-P: .92
+ *     - **Test-Retest Correlations (4-week interval):**
+ *       - E-I: .95
+ *       - S-N: .97
+ *       - T-F: .94
+ *       - J-P: .95
+ *
+ * 5.  **`scoreKey` Notation for Response Direction:**
  *     The `questions.json` file is expected to contain a `scoreKey` (1 or 0) for each
  *     response option. A `scoreKey` of 1 indicates the 'positive' pole of the dichotomy
  *     (E, S, T, J), while 0 indicates the 'negative' pole (I, N, F, P). This notation
  *     streamlines the core likelihood calculation within the MLE loop, enhancing
  *     efficiency and reducing logical complexity.
  *
- * 5.  **Handling of Omissions:**
+ * 6.  **Handling of Omissions:**
  *     In accordance with MBTI Form M administration guidelines (MBTI Manual, p. 151),
  *     omitted (unanswered) questions are gracefully handled. They are simply excluded
  *     from the MLE calculation for the relevant dichotomy, ensuring that only available
  *     information is used in producing the most accurate type.
  *     If an entire dichotomy has no answered questions, its theta defaults to 0.
  *
- * 6.  **Preference Clarity Index (PCI) and Category (PCC):**
+ * 7.  **Preference Clarity Index (PCI) and Category (PCC):**
  *     The calculated 'theta' for each dichotomy is transformed into a Preference
  *     Clarity Index (PCI) on a scale of 1-30, and further categorized into a
  *     qualitative Preference Clarity Category (Slight, Moderate, Clear, Very Clear).
  *     These conversions adhere to the calculations and ranges specified in the
  *     MBTI Manual (p. 148-149).
  *
- * 7.  **Tie-Breaking Rule:**
+ * 8.  **Tie-Breaking Rule:**
  *     In the rare event that a dichotomy's theta score is precisely zero (indicating
  *     no discernible preference), a tie-breaking rule is applied, assigning the
  *     preference to I, N, F, or P as per the MBTI Manual (p. 147).

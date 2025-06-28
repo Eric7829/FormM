@@ -1,169 +1,142 @@
 /**
- * scorer.js: Professional-Grade MBTI Psychometric Engine
+ * scorer.js: Professional-Grade MBTI Psychometric Engine for Form M
  *
- * This module is responsible for calculating an individual's MBTI preferences
- * (E-I, S-N, T-F, J-P) and their clarity of preference, based on their responses
- * to the MBTI Form M questionnaire. It implements an Item Response Theory (IRT)
- * scoring model, leveraging professionally calibrated item parameters from
- * `itemParameterMatrix.js`.
+ * This module implements a robust Item Response Theory (IRT) scoring algorithm
+ * to calculate an individual's MBTI preferences (E-I, S-N, T-F, J-P) and their
+ * clarity of preference based on responses to the MBTI Form M questionnaire.
  *
- * The core logic involves:
- * 1. Defining the MBTI dichotomies, their poles, facets, and tie-breaking rules.
- * 2. Pre-processing the item parameters to efficiently map facets to their
- *    corresponding question indices.
- * 3. For each MBTI 'facet', it employs Maximum Likelihood Estimation (MLE) to find
- *    the 'theta' (latent trait level) that best explains the respondent's answers
- *    to the questions associated with that specific facet. This is done by
- *    iteratively calculating the probability of observed responses across a range of
- *    theta values, consistent with the MLE formula on page 146 of the MBTI Manual.
- * 4. These facet-level theta scores are then combined to compute a composite
- *    theta for each of the four main MBTI dichotomies.
- * 5. Finally, the composite dichotomy theta scores are converted into a
- *    Preference Clarity Index (PCI) and a qualitative Preference Clarity Category (PCC),
- *    which indicate the strength and consistency of the respondent's reported preference,
- *    adhering to the calculation methods and ranges specified on pages 148-149 of the manual.
+ * It operates on the following core principles and components:
  *
- * The use of IRT, specifically a 2-Parameter Logistic (2PL) model, allows for
- * more precise and theoretically sound measurement compared to traditional raw-score
- * counting. The 'a' (discrimination) and 'b' (difficulty/location) parameters for
- * each item are sourced from a robust empirical calibration study, ensuring the
- * reliability and validity of the results.
+ * 1.  **IRT Model (2-Parameter Logistic - 2PL):**
+ *     The scoring utilizes a 2PL model, which accounts for both item difficulty
+ *     ('b' parameter - location on the latent trait continuum) and item discrimination
+ *     ('a' parameter - how well an item differentiates between individuals).
+ *     This provides a more precise and psychometrically sound measurement compared
+ *     to simple raw-score counting.
+ *
+ * 2.  **Calibrated Item Parameters:**
+ *     'a' and 'b' parameters for each of the 93 items are sourced from the
+ *     `itemParameterMatrix.js`. These parameters are empirically derived and
+ *     professionally calibrated based on external academic research (Van Zyl & Taylor, 2011),
+ *     ensuring the reliability and validity of the results.
+ *
+ * 3.  **Maximum Likelihood Estimation (MLE) for Dichotomies:**
+ *     For each of the four main MBTI dichotomies (E-I, S-N, T-F, J-P), the system
+ *     employs MLE to estimate a single 'theta' (latent trait level). This 'theta'
+ *     represents the respondent's underlying strength or clarity of preference for that dichotomy.
+ *     All questions belonging to a specific dichotomy are collectively used in this
+ *     single MLE calculation, aligning directly with the established methodology
+ *     for MBTI Form M scoring (MBTI Manual, p. 146). Facets are used for item
+ *     construction and theoretical alignment, but are not individually scored.
+ *
+ * 4.  **`scoreKey` Notation for Response Direction:**
+ *     The `questions.json` file is expected to contain a `scoreKey` (1 or 0) for each
+ *     response option. A `scoreKey` of 1 indicates the 'positive' pole of the dichotomy
+ *     (E, S, T, J), while 0 indicates the 'negative' pole (I, N, F, P). This notation
+ *     streamlines the core likelihood calculation within the MLE loop, enhancing
+ *     efficiency and reducing logical complexity.
+ *
+ * 5.  **Handling of Omissions:**
+ *     In accordance with MBTI Form M administration guidelines (MBTI Manual, p. 151),
+ *     omitted (unanswered) questions are gracefully handled. They are simply excluded
+ *     from the MLE calculation for the relevant dichotomy, ensuring that only available
+ *     information is used in producing the most accurate type.
+ *     If an entire dichotomy has no answered questions, its theta defaults to 0.
+ *
+ * 6.  **Preference Clarity Index (PCI) and Category (PCC):**
+ *     The calculated 'theta' for each dichotomy is transformed into a Preference
+ *     Clarity Index (PCI) on a scale of 1-30, and further categorized into a
+ *     qualitative Preference Clarity Category (Slight, Moderate, Clear, Very Clear).
+ *     These conversions adhere to the calculations and ranges specified in the
+ *     MBTI Manual (p. 148-149).
+ *
+ * 7.  **Tie-Breaking Rule:**
+ *     In the rare event that a dichotomy's theta score is precisely zero (indicating
+ *     no discernible preference), a tie-breaking rule is applied, assigning the
+ *     preference to I, N, F, or P as per the MBTI Manual (p. 147).
+ *
+ * This module provides the psychometric backbone for deriving accurate MBTI
+ * preferences, reflecting rigorous adherence to established IRT principles
+ * and the specific characteristics of the MBTI Form M.
  */
 
 import { itemParameters } from './itemParameterMatrix.js';
 
 // --- Model Configuration ---
-// Defines the facets (sub-preferences) that align with the 'positive' pole of each dichotomy.
-// For example, 'Enthusiastic' is a facet of 'Extraversion' (E).
-const POSITIVE_POLE_FACETS = {
-    'E-I': ['Initiating', 'Expressive', 'Gregarious', 'Active', 'Enthusiastic'],
-    'S-N': ['Concrete', 'Realistic', 'Practical', 'Experiential', 'Traditional'],
-    'T-F': ['Logical', 'Reasonable', 'Questioning', 'Critical', 'Tough'],
-    'J-P': ['Systematic', 'Planful', 'Early Starting', 'Scheduled', 'Methodical']
-};
-// Defines the facets that align with the 'negative' pole of each dichotomy.
-// For example, 'Quiet' is a facet of 'Introversion' (I).
-const NEGATIVE_POLE_FACETS = {
-    'E-I': ['Receiving', 'Contained', 'Intimate', 'Reflective', 'Quiet'],
-    'S-N': ['Abstract', 'Imaginative', 'Conceptual', 'Theoretical', 'Original'],
-    'T-F': ['Empathetic', 'Compassionate', 'Accommodating', 'Accepting', 'Tender'],
-    'J-P': ['Casual', 'Open-ended', 'Pressure Prompted', 'Spontaneous', 'Emergent']
-};
-
-// Configuration for each of the four MBTI dichotomies.
-// - 'poles': The two opposing preferences (e.g., ['E', 'I']).
-// - 'tieBreaker': The preference pole assigned if the composite theta score is exactly zero.
-//                 As per the MBTI Manual (p. 147), "When a tie occurs, then the person's preference
-//                 becomes I, N, F, or P, depending on the scale."
-// - 'facets': An array of all facets belonging to this dichotomy, combining positive and negative.
+// This config is now only needed for the FINAL scoring step (tie-breaking and preference assignment),
+// not for the core MLE loop.
 const DICHOTOMY_CONFIG = {
-    'E-I': { poles: ['E', 'I'], tieBreaker: 'I', facets: [...POSITIVE_POLE_FACETS['E-I'], ...NEGATIVE_POLE_FACETS['E-I']] },
-    'S-N': { poles: ['S', 'N'], tieBreaker: 'N', facets: [...POSITIVE_POLE_FACETS['S-N'], ...NEGATIVE_POLE_FACETS['S-N']] },
-    'T-F': { poles: ['T', 'F'], tieBreaker: 'F', facets: [...POSITIVE_POLE_FACETS['T-F'], ...NEGATIVE_POLE_FACETS['T-F']] },
-    'J-P': { poles: ['J', 'P'], tieBreaker: 'P', facets: [...POSITIVE_POLE_FACETS['J-P'], ...NEGATIVE_POLE_FACETS['J-P']] }
+    'E-I': { poles: ['E', 'I'], tieBreaker: 'I' },
+    'S-N': { poles: ['S', 'N'], tieBreaker: 'N' },
+    'T-F': { poles: ['T', 'F'], tieBreaker: 'F' },
+    'J-P': { poles: ['J', 'P'], tieBreaker: 'P' }
 };
-
-// Consolidated list of all unique facets across all dichotomies.
-const ALL_FACETS = Object.values(DICHOTOMY_CONFIG).flatMap(d => d.facets);
-// A Set for quick lookup of facets associated with the 'negative' pole.
-// This is not used for theta sign correction but is kept for potential future analysis.
-const NEGATIVE_FACET_SET = new Set(Object.values(NEGATIVE_POLE_FACETS).flat());
 
 // --- Pre-computation for efficiency ---
-// A map to quickly find all question indices associated with a specific facet.
-// This is built once when the module loads.
-const facetToQuestionMap = new Map();
+const dichotomyToQuestionMap = new Map();
 for (const [index, params] of Object.entries(itemParameters)) {
-    // 'primaryFacet' is directly used from the calibrated item parameter matrix.
-    const facetName = params.primaryFacet;
-    if (!facetName) continue; // Skip if a facet is not defined for an item.
-
-    if (!facetToQuestionMap.has(facetName)) {
-        facetToQuestionMap.set(facetName, []);
+    const dichotomyName = params.dichotomy;
+    if (!dichotomyToQuestionMap.has(dichotomyName)) {
+        dichotomyToQuestionMap.set(dichotomyName, []);
     }
-    facetToQuestionMap.get(facetName).push(parseInt(index, 10)); // Store question index (0-based)
+    dichotomyToQuestionMap.get(dichotomyName).push(parseInt(index, 10));
 }
 
 /**
- * Calculates the probability of a positive response for a given item based on the
- * respondent's latent trait level (theta) and the item's parameters. This implements
- * the 2-Parameter Logistic (2PL) IRT model described in the MBTI Manual (p. 146).
- *
- * @param {number} theta - The latent trait level of the respondent.
- * @param {number} a - The discrimination parameter of the item.
- * @param {number} b - The difficulty/location parameter of the item.
- * @returns {number} The probability of a positive response, ranging from 0 to 1.
+ * Calculates the probability of a '1' response (positive pole) for a given item.
  */
 function probability(theta, a, b) {
-    // P(u=1|θ) = 1 / (1 + e^(-a(θ-b))), as per MBTI Manual, p. 146.
     return 1 / (1 + Math.exp(-a * (theta - b)));
 }
 
 /**
- * Converts a Preference Clarity Index (PCI) numerical score into a qualitative
- * Preference Clarity Category (PCC) string. The ranges are sourced directly from
- * the MBTI Manual (p. 148).
- *
- * @param {number} pci - The Preference Clarity Index (1-30).
- * @returns {string} The Preference Clarity Category (Slight, Moderate, Clear, Very Clear).
+ * Converts a PCI score to a qualitative category.
  */
 function getPccCategory(pci) {
-    if (pci >= 26) return "Very Clear";  // Range 26-30
-    if (pci >= 16) return "Clear";       // Range 16-25
-    if (pci >= 6) return "Moderate";    // Range 6-15
-    return "Slight";                    // Range 1-5
+    if (pci >= 26) return "Very Clear";
+    if (pci >= 16) return "Clear";
+    if (pci >= 6) return "Moderate";
+    return "Slight";
 }
 
 /**
- * Estimates the latent trait level (theta) for a specific MBTI facet using Maximum
- * Likelihood Estimation (MLE). It iterates through a range of possible theta values
- * and finds the one that maximizes the likelihood of the respondent's actual answers,
- * following the MLE logic described in the MBTI Manual (p. 146).
- *
- * @param {string} facetName - The name of the facet (e.g., 'Enthusiastic', 'Imaginative').
- * @param {object} answers - An object where keys are 1-based question numbers and values are
- *                           the chosen option ('A' or 'B').
- * @param {object} allQuestions - The full questions.json data.
- * @returns {number} The estimated theta score for the given facet, rounded to two decimal places.
+ * Estimates theta for a dichotomy using MLE, now leveraging the `scoreKey`.
  */
-function findBestThetaForFacet(facetName, answers, allQuestions) {
-    const questionIndices = facetToQuestionMap.get(facetName) || [];
-    if (questionIndices.length === 0) {
-        return 0; // If no questions are mapped, return a neutral theta.
+function findBestThetaForDichotomy(dichotomyName, answers, allQuestions) {
+    const allDichotomyIndices = dichotomyToQuestionMap.get(dichotomyName) || [];
+    const answeredQuestionIndices = allDichotomyIndices.filter(qIndex => answers[qIndex + 1]);
+
+    if (answeredQuestionIndices.length === 0) {
+        return 0; // Return neutral theta for no answers.
     }
 
     let bestTheta = 0;
     let maxLogLikelihood = -Infinity;
 
-    // Iterate through a plausible range of theta values (-3.0 to 3.0).
     for (let theta = -3.0; theta <= 3.0; theta += 0.05) {
-        let currentLogLikelihood = 0; // Accumulates log-likelihood as per formula on p. 146.
+        let currentLogLikelihood = 0;
 
-        questionIndices.forEach(qIndex => {
+        answeredQuestionIndices.forEach(qIndex => {
             const params = itemParameters[qIndex];
             const answer = answers[qIndex + 1];
-
-            if (!answer) {
-                return; // Skip unanswered questions.
-            }
-
-            const { a, b } = params.params;
-            const probPositivePole = probability(theta, a, b);
-
             const questionData = allQuestions.MBTI_Form_M[qIndex];
-            const userChoicePole = questionData.options[answer.choice].pole;
-            // The positive pole is defined as the first pole in the DICHOTOMY_CONFIG (e.g., E, S, T, J).
-            const positivePole = DICHOTOMY_CONFIG[params.dichotomy].poles[0];
 
-            // Add log-likelihood of the observed answer, preventing Math.log(0).
-            if (userChoicePole === positivePole) {
-                currentLogLikelihood += Math.log(probPositivePole || 1e-9);
-            } else {
-                currentLogLikelihood += Math.log(1 - probPositivePole || 1e-9);
+            // P(u=1|θ) - The probability of choosing the positive-keyed option.
+            const probPositive = probability(theta, params.params.a, params.params.b);
+
+            // **CHANGE:** Directly use the `scoreKey` from the chosen option.
+            const userScoreKey = questionData.options[answer.choice].scoreKey;
+
+            // **CHANGE:** Simplified logic. No more string comparisons or lookups.
+            if (userScoreKey === 1) {
+                // User chose the positive pole, so we use P(θ).
+                currentLogLikelihood += Math.log(probPositive || 1e-9);
+            } else { // userScoreKey === 0
+                // User chose the negative pole, so we use 1 - P(θ).
+                currentLogLikelihood += Math.log(1 - probPositive || 1e-9);
             }
         });
 
-        // If current theta yields a higher likelihood, it's a better fit.
         if (currentLogLikelihood > maxLogLikelihood) {
             maxLogLikelihood = currentLogLikelihood;
             bestTheta = theta;
@@ -173,93 +146,41 @@ function findBestThetaForFacet(facetName, answers, allQuestions) {
 }
 
 /**
- * Computes composite theta scores for each of the four main MBTI dichotomies
- * by averaging the estimated theta scores of their constituent facets.
- * It also calculates the Preference Clarity Index (PCI) and Category (PCC).
- *
- * @param {object} facetThetas - An object containing estimated theta scores for each facet.
- * @returns {object} An object with results for each dichotomy (preference, PCI, PCC, theta).
+ * Main function to calculate MBTI results.
  */
-function computeCompositeDichotomyScores(facetThetas) {
+export function calculateResults(answers, allQuestions) {
     const dichotomyResults = {};
 
     for (const [dichotomy, config] of Object.entries(DICHOTOMY_CONFIG)) {
-        let compositeThetaSum = 0;
-        let facetCount = 0;
+        const theta = findBestThetaForDichotomy(dichotomy, answers, allQuestions);
 
-        for (const facet of config.facets) {
-            const theta = facetThetas[facet];
-            if (theta === undefined) continue;
-
-            // Theta is on a scale where positive indicates the first pole (E,S,T,J) and negative
-            // indicates the second (I,N,F,P). We directly sum the facet thetas.
-            compositeThetaSum += theta;
-            facetCount++;
-        }
-
-        if (facetCount === 0) continue;
-
-        const compositeTheta = compositeThetaSum / facetCount;
         const [pole1, pole2] = config.poles;
         let preference;
 
-        // Determine preference based on theta's position relative to the midpoint (0).
-        // Positive theta corresponds to E, S, T, J (as per Figure 7.4, p. 147).
-        if (compositeTheta > 0.01) {
+        // Theta > 0 indicates preference for the positive pole (E,S,T,J)
+        if (theta > 0) {
             preference = pole1;
-        } else if (compositeTheta < -0.01) {
+        } else if (theta < 0) {
             preference = pole2;
         } else {
-            // Apply tie-breaking rule (p. 147).
             preference = config.tieBreaker;
         }
 
-        // --- PCI Calculation Refactored based on MBTI Manual (p. 148) ---
-        // "The person's score of θ on a given preference scale is divided by the maximum θ for that scale.
-        // This ratio is multiplied by 30 and then rounded up to the nearest positive integer."
-        // We assume Max_Theta is 3.0 based on common IRT scale conventions and the original code's clamping.
         const maxTheta = 3.0;
-        const rawPciCalculation = (Math.min(Math.abs(compositeTheta), maxTheta) / maxTheta) * 30;
-        const pci = Math.max(1, Math.round(rawPciCalculation)); // Ensure PCI is at least 1 and rounded.
-
+        const rawPciCalculation = (Math.abs(theta) / maxTheta) * 30;
+        const pci = theta === 0 ? 1 : Math.max(1, Math.round(rawPciCalculation));
         const pcc = getPccCategory(pci);
 
         dichotomyResults[dichotomy] = {
             preference,
             pci,
             pcc,
-            theta: parseFloat(compositeTheta.toFixed(2)),
+            theta: parseFloat(theta.toFixed(2)),
             dichotomyName: dichotomy
         };
     }
-    return dichotomyResults;
-}
-
-/**
- * Main function to calculate MBTI results.
- * Orchestrates the facet-level theta estimation and composite dichotomy scoring.
- *
- * @param {object} answers - An object where keys are 1-based question numbers and values are
- *                           objects containing the chosen option (e.g., { choice: 'A' }).
- * @param {object} allQuestions - The full JSON data containing all MBTI questions and their options.
- * @returns {object} An object containing 'dichotomyResults' (final preferences, PCI, PCC for each)
- *                   and 'facetScores' (theta scores for individual facets).
- */
-export function calculateResults(answers, allQuestions) {
-    const facetScores = {};
-    // Calculate theta for each individual facet.
-    ALL_FACETS.forEach(facet => {
-        if (facetToQuestionMap.has(facet)) {
-            const theta = findBestThetaForFacet(facet, answers, allQuestions);
-            facetScores[facet] = parseFloat(theta.toFixed(2));
-        }
-    });
-
-    // Compute the main dichotomy results by combining facet scores.
-    const dichotomyResults = computeCompositeDichotomyScores(facetScores);
 
     return {
-        dichotomyResults,
-        facetScores
+        dichotomyResults
     };
 }

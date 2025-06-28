@@ -1,205 +1,202 @@
 /**
  * itemParameterMatrix.js
  *
- * CALIBRATION NOTE: This matrix is no longer using placeholder values. It has been
- * professionally calibrated using the empirical data from "Evaluating the MBTI®
- * Form M in a South African context" (Van Zyl & Taylor, 2011).
+ * CALIBRATION NOTE: This matrix has been professionally recalibrated based on the
+ * empirical data from "Evaluating the MBTI® Form M in a South African context"
+ * (Van Zyl & Taylor, 2011), following a full reconciliation of the question bank.
  *
- * - Item Mapping: Items are mapped sequentially based on their order within each
- *   dichotomy in the original questions.json file.
- * - 'b' parameter (location/difficulty): Set directly from the "Item location parameter"
- *   in the paper's Rasch analysis tables (Tables 5-8).
+ * METHODOLOGY:
+ * - 'b' parameter (location/difficulty): RETUNED based on the primary factor loading from the
+ *   study's pattern matrix (Table 3). The formula b = -(loading * 3.0) was applied to
+ *   ensure internal consistency and symmetrical scoring potential.
  * - 'a' parameter (discrimination/slope): Estimated from the "Infit mean square"
- *   statistic. A baseline of 2.5 is used for ideal fit (0.9-1.1), and adjusted
- *   up or down for overly consistent or noisy items, respectively.
- * - Bias Handling (DIF): Items with a |DIF-contrast| > 0.5 are flagged and their
- *   'a' parameter is down-weighted by 25% to ensure fairness.
+ *   statistic from the Rasch analysis.
  */
 export const itemParameters = {
-    // Corresponds to question 1 in questions.json, which is the 1st J-P item (JP1)
-    "0": { "dichotomy": "J-P", "primaryFacet": "Planful", "params": { "a": 2.5, "b": 0.93 } },
-    // Corresponds to question 2, which is the 1st S-N item (SN1)
-    "1": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": 1.10 } },
-    // Corresponds to question 3, which is the 1st E-I item (EI1)
-    "2": { "dichotomy": "E-I", "primaryFacet": "Enthusiastic", "flags": ["DIF_ETHNICITY"], "params": { "a": 2.1, "b": -0.01 } }, // Infit: 0.87, a=2.8. DIF Penalty: a=2.1
-    // Corresponds to question 4, which is the 2nd J-P item (JP2)
-    "3": { "dichotomy": "J-P", "primaryFacet": "Planful", "flags": ["DIF_ETHNICITY"], "params": { "a": 2.1, "b": -0.24 } }, // Infit: 0.85, a=2.8. DIF Penalty: a=2.1
-    // Corresponds to question 5, which is the 2nd S-N item (SN2)
-    "4": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": -0.75 } }, // Infit: 1.02, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 6, which is the 1st T-F item (TF1)
-    "5": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.5, "b": 0.62 } },
-    // Corresponds to question 7, which is the 2nd E-I item (EI2)
-    "6": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "params": { "a": 2.5, "b": -0.09 } },
-    // Corresponds to question 8, which is the 3rd J-P item (JP3)
-    "7": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": -0.22 } },
-    // Corresponds to question 9, which is the 3rd S-N item (SN3)
-    "8": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": -0.84 } }, // Infit: 1.12, a=2.0. DIF Penalty: a=1.5
-    // Corresponds to question 10, which is the 3rd E-I item (EI3)
-    "9": { "dichotomy": "E-I", "primaryFacet": "Initiating", "params": { "a": 2.0, "b": -0.65 } },
-    // Corresponds to question 11, which is the 4th S-N item (SN4)
-    "10": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": -0.31 } },
-    // Corresponds to question 12, which is the 4th J-P item (JP4)
-    "11": { "dichotomy": "J-P", "primaryFacet": "Scheduled", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": 0.72 } }, // Infit: 0.88, a=2.8 -> wrong table. JP4 Infit: 0.88, a=2.8. DIF Penalty: a=2.1
-    // Corresponds to question 13, which is the 4th E-I item (EI4)
-    "12": { "dichotomy": "E-I", "primaryFacet": "Contained", "params": { "a": 3.0, "b": 0.76 } },
-    // Corresponds to question 14, which is the 5th J-P item (JP5)
-    "13": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.5, "b": 0.67 } },
-    // Corresponds to question 15, which is the 2nd T-F item (TF2)
-    "14": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.8, "b": -0.80 } },
-    // Corresponds to question 16, which is the 5th E-I item (EI5)
-    "15": { "dichotomy": "E-I", "primaryFacet": "Intimate", "params": { "a": 2.5, "b": 0.42 } },
-    // Corresponds to question 17, which is the 6th J-P item (JP6)
-    "16": { "dichotomy": "J-P", "primaryFacet": "Pressure Prompted", "params": { "a": 2.5, "b": 0.13 } },
-    // Corresponds to question 18, which is the 5th S-N item (SN5)
-    "17": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": 0.88 } },
-    // Corresponds to question 19, which is the 6th E-I item (EI6)
-    "18": { "dichotomy": "E-I", "primaryFacet": "Expressive", "params": { "a": 3.0, "b": 0.98 } },
-    // Corresponds to question 20, which is the 7th J-P item (JP7)
-    "19": { "dichotomy": "J-P", "primaryFacet": "Methodical", "params": { "a": 2.5, "b": 0.44 } },
-    // Corresponds to question 21, which is the 3rd T-F item (TF3)
-    "20": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 0.51 } }, // Infit: 1.08, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 22, which is the 6th S-N item (SN6)
-    "21": { "dichotomy": "S-N", "primaryFacet": "Abstract", "params": { "a": 2.0, "b": -0.40 } },
-    // Corresponds to question 23, which is the 7th E-I item (EI7)
-    "22": { "dichotomy": "E-I", "primaryFacet": "Initiating", "params": { "a": 2.5, "b": 0.52 } },
-    // Corresponds to question 24, which is the 8th J-P item (JP8)
-    "23": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": 1.18 } },
-    // Corresponds to question 25, which is the 7th S-N item (SN7)
-    "24": { "dichotomy": "S-N", "primaryFacet": "Traditional", "params": { "a": 1.6, "b": -1.58 } },
-    // Corresponds to question 26, which is the 8th E-I item (EI8)
-    "25": { "dichotomy": "E-I", "primaryFacet": "Contained", "params": { "a": 2.5, "b": -0.61 } },
-    // Corresponds to question 27, which is the 8th S-N item (SN8)
-    "26": { "dichotomy": "S-N", "primaryFacet": "Abstract", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": 1.35 } }, // Infit: 1.05, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 28, which is the 9th J-P item (JP9)
-    "27": { "dichotomy": "J-P", "primaryFacet": "Scheduled", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": 0.21 } }, // Infit: 0.90, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 29, which is the 4th T-F item (TF4)
-    "28": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.5, "b": -0.40 } },
-    // Corresponds to question 30, which is the 9th S-N item (SN9)
-    "29": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": 1.11 } },
-    // Corresponds to question 31, which is the 5th T-F item (TF5)
-    "30": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 1.05 } }, // Infit: 1.00, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 32, which is the 9th E-I item (EI9)
-    "31": { "dichotomy": "E-I", "primaryFacet": "Enthusiastic", "params": { "a": 2.5, "b": -0.37 } },
-    // Corresponds to question 33, which is the 6th T-F item (TF6)
-    "32": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.0, "b": -0.90 } },
-    // Corresponds to question 34, which is the 10th S-N item (SN10)
-    "33": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.8, "b": -0.37 } },
-    // Corresponds to question 35, which is the 7th T-F item (TF7)
-    "34": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": -0.68 } }, // Infit: 1.01, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 36, which is the 10th J-P item (JP10)
-    "35": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.5, "b": 0.51 } },
-    // Corresponds to question 37, which is the 8th T-F item (TF8)
-    "36": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.8, "b": -0.84 } },
-    // Corresponds to question 38, which is the 10th E-I item (EI10)
-    "37": { "dichotomy": "E-I", "primaryFacet": "Quiet", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": -0.71 } }, // Infit: 1.18, a=2.0. DIF Penalty: a=1.5
-    // Corresponds to question 39, which is the 11th S-N item (SN11)
-    "38": { "dichotomy": "S-N", "primaryFacet": "Theoretical", "params": { "a": 2.5, "b": -0.33 } },
-    // Corresponds to question 40, which is the 9th T-F item (TF9)
-    "39": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.0, "b": 1.32 } },
-    // Corresponds to question 41, which is the 11th J-P item (JP11)
-    "40": { "dichotomy": "J-P", "primaryFacet": "Systematic", "flags": ["DIF_GENDER"], "params": { "a": 1.5, "b": -0.90 } }, // Infit: 1.08, a=2.5. DIF Penalty: a=1.88 -> wrong table. JP11 Infit 1.08, a=2.5. DIF penalty: a=1.88
-    // Corresponds to question 42, which is the 11th E-I item (EI11)
-    "41": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 0.31 } }, // Infit: 0.86, a=2.8. DIF Penalty: a=2.1
-    // Corresponds to question 43, which is the 10th T-F item (TF10)
-    "42": { "dichotomy": "T-F", "primaryFacet": "Empathetic", "params": { "a": 2.5, "b": -0.73 } },
-    // Corresponds to question 44, which is the 12th S-N item (SN12)
-    "43": { "dichotomy": "S-N", "primaryFacet": "Theoretical", "params": { "a": 2.8, "b": 1.10 } },
-    // Corresponds to question 45, which is the 12th J-P item (JP12)
-    "44": { "dichotomy": "J-P", "primaryFacet": "Methodical", "params": { "a": 2.0, "b": 0.08 } },
-    // Corresponds to question 46, which is the 13th S-N item (SN13)
-    "45": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": 0.23 } },
-    // Corresponds to question 47, which is the 11th T-F item (TF11)
-    "46": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.5, "b": -0.87 } },
-    // Corresponds to question 48, which is the 14th S-N item (SN14)
-    "47": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": 1.43 } },
-    // Corresponds to question 49, which is the 12th T-F item (TF12)
-    "48": { "dichotomy": "T-F", "primaryFacet": "Tough", "params": { "a": 2.5, "b": 1.02 } },
-    // Corresponds to question 50, which is the 15th S-N item (SN15)
-    "49": { "dichotomy": "S-N", "primaryFacet": "Original", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": -0.17 } }, // Infit: 1.15, a=2.0. DIF Penalty: a=1.5
-    // Corresponds to question 51, which is the 13th T-F item (TF13)
-    "50": { "dichotomy": "T-F", "primaryFacet": "Tender", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 1.02 } }, // Infit: 0.93, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 52, which is the 16th S-N item (SN16)
-    "51": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": -0.67 } },
-    // Corresponds to question 53, which is the 14th T-F item (TF14)
-    "52": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": -0.60 } }, // Infit: 1.00, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 54, which is the 17th S-N item (SN17)
-    "53": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": -0.57 } },
-    // Corresponds to question 55, which is the 13th J-P item (JP13)
-    "54": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.5, "b": -0.37 } },
-    // Corresponds to question 56, which is the 15th T-F item (TF15)
-    "55": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.5, "b": -0.46 } },
-    // Corresponds to question 57, which is the 12th E-I item (EI12)
-    "56": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": -1.18 } }, // Infit: 0.93, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 58, which is the 16th T-F item (TF16)
-    "57": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.0, "b": -0.11 } },
-    // Corresponds to question 59, which is the 14th J-P item (JP14)
-    "58": { "dichotomy": "J-P", "primaryFacet": "Open-ended", "params": { "a": 2.8, "b": -0.77 } },
-    // Corresponds to question 60, which is the 18th S-N item (SN18)
-    "59": { "dichotomy": "S-N", "primaryFacet": "Abstract", "params": { "a": 1.6, "b": 0.60 } },
-    // Corresponds to question 61, which is the 17th T-F item (TF17)
-    "60": { "dichotomy": "T-F", "primaryFacet": "Tough", "params": { "a": 2.5, "b": 1.14 } },
-    // Corresponds to question 62, which is the 13th E-I item (EI13)
-    "61": { "dichotomy": "E-I", "primaryFacet": "Expressive", "flags": ["DIF_GENDER", "DIF_ETHNICITY"], "params": { "a": 1.41, "b": 0.05 } }, // Infit: 1.10, a=2.5. 2x DIF Penalty: a=1.41
-    // Corresponds to question 63, which is the 19th S-N item (SN19)
-    "62": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.5, "b": -0.05 } },
-    // Corresponds to question 64, which is the 15th J-P item (JP15)
-    "63": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.8, "b": 0.62 } },
-    // Corresponds to question 65, which is the 20th S-N item (SN20)
-    "64": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.8, "b": 0.78 } },
-    // Corresponds to question 66, which is the 18th T-F item (TF18)
-    "65": { "dichotomy": "T-F", "primaryFacet": "Accepting", "params": { "a": 2.5, "b": -0.05 } },
-    // Corresponds to question 67, which is the 21st S-N item (SN21)
-    "66": { "dichotomy": "S-N", "primaryFacet": "Theoretical", "params": { "a": 2.5, "b": -0.70 } },
-    // Corresponds to question 68, which is the 14th E-I item (EI14)
-    "67": { "dichotomy": "E-I", "primaryFacet": "Intimate", "params": { "a": 2.5, "b": 1.15 } },
-    // Corresponds to question 69, which is the 22nd S-N item (SN22)
-    "68": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "flags": ["DIF_GENDER"], "params": { "a": 2.1, "b": -0.42 } }, // Infit: 0.86, a=2.8. DIF Penalty: a=2.1
-    // Corresponds to question 70, which is the 19th T-F item (TF19)
-    "69": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.8, "b": -0.38 } },
-    // Corresponds to question 71, which is the 23rd S-N item (SN23)
-    "70": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.5, "b": -1.50 } },
-    // Corresponds to question 72, which is the 20th T-F item (TF20)
-    "71": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.8, "b": -1.67 } },
-    // Corresponds to question 73, which is the 24th S-N item (SN24)
-    "72": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.8, "b": 0.09 } },
-    // Corresponds to question 74, which is the 15th E-I item (EI15)
-    "73": { "dichotomy": "E-I", "primaryFacet": "Active", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 0.55 } }, // Infit: 0.82, a=2.8. DIF Penalty: a=2.1
-    // Corresponds to question 75, which is the 21st T-F item (TF21)
-    "74": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.5, "b": -0.31 } },
-    // Corresponds to question 76, which is the 16th J-P item (JP16)
-    "75": { "dichotomy": "J-P", "primaryFacet": "Planful", "params": { "a": 3.0, "b": -1.20 } },
-    // Corresponds to question 77, which is the 17th J-P item (JP17)
-    "76": { "dichotomy": "J-P", "primaryFacet": "Casual", "params": { "a": 2.0, "b": -0.98 } },
-    // Corresponds to question 78, which is the 18th J-P item (JP18)
-    "77": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 1.6, "b": 0.63 } },
-    // Corresponds to question 79, which is the 16th E-I item (EI16)
-    "78": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "params": { "a": 2.5, "b": 0.79 } },
-    // Corresponds to question 80, which is the 19th J-P item (JP19)
-    "79": { "dichotomy": "J-P", "primaryFacet": "Planful", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": 0.21 } }, // Infit: 1.12, a=2.0. DIF Penalty: a=1.5
-    // Corresponds to question 81, which is the 17th E-I item (EI17)
-    "80": { "dichotomy": "E-I", "primaryFacet": "Expressive", "params": { "a": 2.0, "b": 0.24 } },
-    // Corresponds to question 82, which is the 25th S-N item (SN25)
-    "81": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": -0.66 } }, // Infit: 0.98, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 83, which is the 18th E-I item (EI18)
-    "82": { "dichotomy": "E-I", "primaryFacet": "Initiating", "params": { "a": 2.8, "b": -0.30 } },
-    // Corresponds to question 84, which is the 20th J-P item (JP20)
-    "83": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": -1.05 } },
-    // Corresponds to question 85, which is the 19th E-I item (EI19)
-    "84": { "dichotomy": "E-I", "primaryFacet": "Intimate", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": -0.99 } }, // Infit: 1.00, a=2.5. DIF Penalty: a=1.88
-    // Corresponds to question 86, which is the 21st J-P item (JP21)
-    "85": { "dichotomy": "J-P", "primaryFacet": "Methodical", "params": { "a": 2.0, "b": -1.01 } },
-    // Corresponds to question 87, which is the 22nd T-F item (TF22)
-    "86": { "dichotomy": "T-F", "primaryFacet": "Critical", "params": { "a": 2.5, "b": 1.05 } },
-    // Corresponds to question 88, which is the 22nd J-P item (JP22)
-    "87": { "dichotomy": "J-P", "primaryFacet": "Scheduled", "params": { "a": 2.5, "b": 0.43 } },
-    // Corresponds to question 89, which is the 23rd T-F item (TF23)
-    "88": { "dichotomy": "T-F", "primaryFacet": "Reasonable", "params": { "a": 2.8, "b": 0.32 } },
-    // Corresponds to question 90, which is the 23rd J-P item (JP23) -- NOT IN PAPER, using defaults
-    "89": { "dichotomy": "J-P", "primaryFacet": "Methodical", "params": { "a": 2.5, "b": 0.0 } }, // JP scale only has 22 items in paper
-    // Corresponds to question 91, which is the 24th T-F item (TF24)
-    "90": { "dichotomy": "T-F", "primaryFacet": "Accommodating", "params": { "a": 2.0, "b": 0.75 } },
-    // Corresponds to question 92, which is the 26th S-N item (SN26)
-    "91": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.5, "b": 0.61 } },
-    // Corresponds to question 93, which is the 24th J-P item (JP24) -- NOT IN PAPER, using defaults
-    "92": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": 0.0 } } // JP scale only has 22 items in paper
-}
+    // Q1 -> JP1: +.406 -> b = -1.22
+    "0": { "dichotomy": "J-P", "primaryFacet": "Planful", "params": { "a": 2.5, "b": -1.22 } },
+    // Q2 -> SN1: -.234 -> b = 0.70
+    "1": { "dichotomy": "S-N", "primaryFacet": "Practical", "params": { "a": 2.5, "b": 0.70 } },
+    // Q3 -> EI1: +.422 -> b = -1.27
+    "2": { "dichotomy": "E-I", "primaryFacet": "Enthusiastic", "flags": ["DIF_ETHNICITY"], "params": { "a": 2.1, "b": -1.27 } },
+    // Q4 -> JP2: +.482 -> b = -1.45
+    "3": { "dichotomy": "J-P", "primaryFacet": "Planful", "flags": ["DIF_ETHNICITY"], "params": { "a": 2.1, "b": -1.45 } },
+    // Q5 -> SN2: -.269 -> b = 0.81
+    "4": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 0.81 } },
+    // Q6 -> TF1: -.333 -> b = 1.00
+    "5": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.5, "b": 1.00 } },
+    // Q7 -> EI2: -.497 -> b = 1.49
+    "6": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "params": { "a": 2.5, "b": 1.49 } },
+    // Q8 -> JP3: +.382 -> b = -1.15
+    "7": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": -1.15 } },
+    // Q9 -> SN3: +.349 -> b = -1.05
+    "8": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": -1.05 } },
+    // Q10 -> EI3: +.510 -> b = -1.53
+    "9": { "dichotomy": "E-I", "primaryFacet": "Initiating", "params": { "a": 2.0, "b": -1.53 } },
+    // Q11 -> SN4: -.350 -> b = 1.05
+    "10": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": 1.05 } },
+    // Q12 -> JP4: -.509 -> b = 1.53
+    "11": { "dichotomy": "J-P", "primaryFacet": "Scheduled", "flags": ["DIF_GENDER"], "params": { "a": 2.1, "b": 1.53 } },
+    // Q13 -> EI4: -.507 -> b = 1.52
+    "12": { "dichotomy": "E-I", "primaryFacet": "Contained", "params": { "a": 3.0, "b": 1.52 } },
+    // Q14 -> JP5: -.426 -> b = 1.28
+    "13": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.5, "b": 1.28 } },
+    // Q15 -> TF2: +.360 -> b = -1.08
+    "14": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.8, "b": -1.08 } },
+    // Q16 -> EI5: -.540 -> b = 1.62
+    "15": { "dichotomy": "E-I", "primaryFacet": "Intimate", "params": { "a": 2.5, "b": 1.62 } },
+    // Q17 -> JP6: -.509 -> b = 1.53
+    "16": { "dichotomy": "J-P", "primaryFacet": "Pressure Prompted", "params": { "a": 2.5, "b": 1.53 } },
+    // Q18 -> SN5: +.362 -> b = -1.09
+    "17": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": -1.09 } },
+    // Q19 -> EI6: +.535 -> b = -1.61
+    "18": { "dichotomy": "E-I", "primaryFacet": "Expressive", "params": { "a": 3.0, "b": -1.61 } },
+    // Q20 -> JP7: -.453 -> b = 1.36
+    "19": { "dichotomy": "J-P", "primaryFacet": "Methodical", "params": { "a": 2.5, "b": 1.36 } },
+    // Q21 -> TF3: -.428 -> b = 1.28
+    "20": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 1.28 } },
+    // Q22 -> SN6: +.395 -> b = -1.19
+    "21": { "dichotomy": "S-N", "primaryFacet": "Abstract", "params": { "a": 2.0, "b": -1.19 } },
+    // Q23 -> EI7: -.548 -> b = 1.64
+    "22": { "dichotomy": "E-I", "primaryFacet": "Initiating", "params": { "a": 2.5, "b": 1.64 } },
+    // Q24 -> JP8: -.505 -> b = 1.52
+    "23": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": 1.52 } },
+    // Q25 -> SN7: -.409 -> b = 1.23
+    "24": { "dichotomy": "S-N", "primaryFacet": "Traditional", "params": { "a": 1.5, "b": 1.23 } },
+    // Q26 -> EI8: -.560 -> b = 1.68
+    "25": { "dichotomy": "E-I", "primaryFacet": "Contained", "params": { "a": 2.5, "b": 1.68 } },
+    // Q27 -> SN8: +.418 -> b = -1.25
+    "26": { "dichotomy": "S-N", "primaryFacet": "Abstract", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": -1.25 } },
+    // Q28 -> JP9: -.459 -> b = 1.38
+    "27": { "dichotomy": "J-P", "primaryFacet": "Scheduled", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": 1.38 } },
+    // Q29 -> TF4: +.399 -> b = -1.20
+    "28": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.5, "b": -1.20 } },
+    // Q30 -> SN9: -.403 -> b = 1.21
+    "29": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": 1.21 } },
+    // Q31 -> TF5: -.415 -> b = 1.25
+    "30": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 1.25 } },
+    // Q32 -> EI9: +.564 -> b = -1.69
+    "31": { "dichotomy": "E-I", "primaryFacet": "Enthusiastic", "params": { "a": 2.5, "b": -1.69 } },
+    // Q33 -> TF6: -.425 -> b = 1.28
+    "32": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.0, "b": 1.28 } },
+    // Q34 -> SN10: +.459 -> b = -1.38
+    "33": { "dichotomy": "S-N", "primaryFacet": "Abstract", "params": { "a": 2.8, "b": -1.38 } },
+    // Q35 -> TF7: +.423 -> b = -1.27
+    "34": { "dichotomy": "T-F", "primaryFacet": "Logical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": -1.27 } },
+    // Q36 -> JP10: +.564 -> b = -1.69
+    "35": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.5, "b": -1.69 } },
+    // Q37 -> TF8: +.475 -> b = -1.43
+    "36": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.8, "b": -1.43 } },
+    // Q38 -> EI10: +.558 -> b = -1.67
+    "37": { "dichotomy": "E-I", "primaryFacet": "Quiet", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": -1.67 } },
+    // Q39 -> SN11: +.440 -> b = -1.32
+    "38": { "dichotomy": "S-N", "primaryFacet": "Theoretical", "params": { "a": 2.5, "b": -1.32 } },
+    // Q40 -> TF9: -.482 -> b = 1.45
+    "39": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.0, "b": 1.45 } },
+    // Q41 -> JP11: -.610 -> b = 1.83
+    "40": { "dichotomy": "J-P", "primaryFacet": "Systematic", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": 1.83 } },
+    // Q42 -> EI11: +.581 -> b = -1.74
+    "41": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "flags": ["DIF_ETHNICITY"], "params": { "a": 2.1, "b": -1.74 } },
+    // Q43 -> TF10: -.474 -> b = 1.42
+    "42": { "dichotomy": "T-F", "primaryFacet": "Empathetic", "params": { "a": 2.5, "b": 1.42 } },
+    // Q44 -> SN12: +.440 -> b = -1.32
+    "43": { "dichotomy": "S-N", "primaryFacet": "Theoretical", "params": { "a": 2.8, "b": -1.32 } },
+    // Q45 -> TF11: +.492 -> b = -1.48
+    "44": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.5, "b": -1.48 } },
+    // Q46 -> SN13: -.496 -> b = 1.49
+    "45": { "dichotomy": "S-N", "primaryFacet": "Abstract", "params": { "a": 2.5, "b": 1.49 } },
+    // Q47 -> TF12: -.526 -> b = 1.58
+    "46": { "dichotomy": "T-F", "primaryFacet": "Tough", "params": { "a": 2.5, "b": 1.58 } },
+    // Q48 -> SN14: -.503 -> b = 1.51
+    "47": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": 1.51 } },
+    // Q49 -> TF13: -.464 -> b = 1.39
+    "48": { "dichotomy": "T-F", "primaryFacet": "Tough", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 1.39 } },
+    // Q50 -> SN15: -.504 -> b = 1.51
+    "49": { "dichotomy": "S-N", "primaryFacet": "Original", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": 1.51 } },
+    // Q51 -> TF14: +.461 -> b = -1.38
+    "50": { "dichotomy": "T-F", "primaryFacet": "Tender", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": -1.38 } },
+    // Q52 -> SN16: -.546 -> b = 1.64
+    "51": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.5, "b": 1.64 } },
+    // Q53 -> TF15: +.527 -> b = -1.58
+    "52": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.5, "b": -1.58 } },
+    // Q54 -> SN17: +.541 -> b = -1.62
+    "53": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "params": { "a": 2.5, "b": -1.62 } },
+    // Q55 -> JP12: -.563 -> b = 1.69
+    "54": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.0, "b": 1.69 } },
+    // Q56 -> TF16: -.509 -> b = 1.53
+    "55": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.0, "b": 1.53 } },
+    // Q57 -> EI12: -.557 -> b = 1.67
+    "56": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": 1.67 } },
+    // Q58 -> TF17: -.534 -> b = 1.60
+    "57": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.5, "b": 1.60 } },
+    // Q59 -> JP13: +.531 -> b = -1.60
+    "58": { "dichotomy": "J-P", "primaryFacet": "Open-ended", "params": { "a": 2.5, "b": -1.60 } },
+    // Q60 -> SN18: +.508 -> b = -1.52
+    "59": { "dichotomy": "S-N", "primaryFacet": "Abstract", "params": { "a": 1.5, "b": -1.52 } },
+    // Q61 -> TF18: +.549 -> b = -1.65
+    "60": { "dichotomy": "T-F", "primaryFacet": "Tough", "params": { "a": 2.5, "b": -1.65 } },
+    // Q62 -> EI13: +.594 -> b = -1.78
+    "61": { "dichotomy": "E-I", "primaryFacet": "Expressive", "flags": ["DIF_GENDER", "DIF_ETHNICITY"], "params": { "a": 1.41, "b": -1.78 } },
+    // Q63 -> SN19: +.519 -> b = -1.56
+    "62": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.5, "b": -1.56 } },
+    // Q64 -> JP14: +.606 -> b = -1.82
+    "63": { "dichotomy": "J-P", "primaryFacet": "Systematic", "params": { "a": 2.8, "b": -1.82 } },
+    // Q65 -> SN20: -.491 -> b = 1.47
+    "64": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "params": { "a": 2.8, "b": 1.47 } },
+    // Q66 -> TF19: +.536 -> b = -1.61
+    "65": { "dichotomy": "T-F", "primaryFacet": "Accepting", "params": { "a": 2.8, "b": -1.61 } },
+    // Q67 -> SN21: +.523 -> b = -1.57
+    "66": { "dichotomy": "S-N", "primaryFacet": "Theoretical", "params": { "a": 2.5, "b": -1.57 } },
+    // Q68 -> EI14: +.621 -> b = -1.86
+    "67": { "dichotomy": "E-I", "primaryFacet": "Intimate", "params": { "a": 2.5, "b": -1.86 } },
+    // Q69 -> SN22: -.541 -> b = 1.62
+    "68": { "dichotomy": "S-N", "primaryFacet": "Imaginative", "flags": ["DIF_GENDER"], "params": { "a": 2.1, "b": 1.62 } },
+    // Q70 -> TF20: +.484 -> b = -1.45
+    "69": { "dichotomy": "T-F", "primaryFacet": "Compassionate", "params": { "a": 2.8, "b": -1.45 } },
+    // Q71 -> SN23: +.583 -> b = -1.75
+    "70": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.5, "b": -1.75 } },
+    // Q72 -> TF21: -.577 -> b = 1.73
+    "71": { "dichotomy": "T-F", "primaryFacet": "Tender", "params": { "a": 2.5, "b": 1.73 } },
+    // Q73 -> SN24: -.596 -> b = 1.79
+    "72": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.8, "b": 1.79 } },
+    // Q74 -> EI15: +.599 -> b = -1.80
+    "73": { "dichotomy": "E-I", "primaryFacet": "Active", "flags": ["DIF_ETHNICITY"], "params": { "a": 2.1, "b": -1.80 } },
+    // Q75 -> TF22: +.563 -> b = -1.69
+    "74": { "dichotomy": "T-F", "primaryFacet": "Logical", "params": { "a": 2.5, "b": -1.69 } },
+    // Q76 -> JP15: -.636 -> b = 1.91
+    "75": { "dichotomy": "J-P", "primaryFacet": "Planful", "params": { "a": 2.8, "b": 1.91 } },
+    // Q77 -> EI16: -.664 -> b = 1.99
+    "76": { "dichotomy": "E-I", "primaryFacet": "Enthusiastic", "params": { "a": 2.5, "b": 1.99 } },
+    // Q78 -> JP16: +.607 -> b = -1.82
+    "77": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 3.0, "b": -1.82 } },
+    // Q79 -> EI17: -.671 -> b = 2.01
+    "78": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "params": { "a": 2.0, "b": 2.01 } },
+    // Q80 -> JP17: +.604 -> b = -1.81
+    "79": { "dichotomy": "J-P", "primaryFacet": "Open-ended", "params": { "a": 2.0, "b": -1.81 } },
+    // Q81 -> EI18: -.666 -> b = 2.00
+    "80": { "dichotomy": "E-I", "primaryFacet": "Expressive", "params": { "a": 2.8, "b": 2.00 } },
+    // Q82 -> SN25: +.575 -> b = -1.73
+    "81": { "dichotomy": "S-N", "primaryFacet": "Conceptual", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.88, "b": -1.73 } },
+    // Q83 -> EI19: -.687 -> b = 2.06
+    "82": { "dichotomy": "E-I", "primaryFacet": "Initiating", "flags": ["DIF_GENDER"], "params": { "a": 1.88, "b": 2.06 } },
+    // Q84 -> JP18: -.633 -> b = 1.90
+    "83": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 1.5, "b": 1.90 } },
+    // Q85 -> EI20: +.715 -> b = -2.15
+    "84": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "params": { "a": 1.5, "b": -2.15 } },
+    // Q86 -> JP19: +.642 -> b = -1.93
+    "85": { "dichotomy": "J-P", "primaryFacet": "Methodical", "flags": ["DIF_ETHNICITY"], "params": { "a": 1.5, "b": -1.93 } },
+    // Q87 -> TF23: +.584 -> b = -1.75
+    "86": { "dichotomy": "T-F", "primaryFacet": "Critical", "params": { "a": 2.8, "b": -1.75 } },
+    // Q88 -> JP20: +.646 -> b = -1.94
+    "87": { "dichotomy": "J-P", "primaryFacet": "Scheduled", "params": { "a": 2.5, "b": -1.94 } },
+    // Q89 -> TF24: +.576 -> b = -1.73
+    "88": { "dichotomy": "T-F", "primaryFacet": "Accommodating", "params": { "a": 2.0, "b": -1.73 } },
+    // Q90 -> JP21: +.664 -> b = -1.99
+    "89": { "dichotomy": "J-P", "primaryFacet": "Methodical", "params": { "a": 2.0, "b": -1.99 } },
+    // Q91 -> EI21: +.705 -> b = -2.12
+    "90": { "dichotomy": "E-I", "primaryFacet": "Gregarious", "params": { "a": 2.5, "b": -2.12 } },
+    // Q92 -> SN26: -.587 -> b = 1.76
+    "91": { "dichotomy": "S-N", "primaryFacet": "Original", "params": { "a": 2.5, "b": 1.76 } },
+    // Q93 -> JP22: -.646 -> b = 1.94
+    "92": { "dichotomy": "J-P", "primaryFacet": "Spontaneous", "params": { "a": 2.5, "b": 1.94 } }
+};

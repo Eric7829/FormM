@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allQuestions = [];
     let currentQuestionIndex = 0;
     let userAnswers = [];
-    let reportedType = {}; // This will now store JUST the dichotomy results
+    let reportedType = {}; // This will store the final dichotomy results
     let bestFitType = {};
     let currentVerificationIndex = 0;
 
@@ -83,25 +83,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showResults() {
-        // 1. CONVERT THE `userAnswers` ARRAY TO THE OBJECT FORMAT THE SCORER EXPECTS
-        // The scorer is documented to need an object with 1-based question numbers as keys.
         const answersForScorer = {};
         userAnswers.forEach((answer, index) => {
             if (answer) {
-                // The key is the 1-based question number (index + 1)
                 answersForScorer[index + 1] = answer;
             }
         });
 
-        // 2. CALL THE SCORER WITH THE CORRECTLY FORMATTED DATA
-        const fullResults = calculateResults(answersForScorer, { MBTI_Form_M: allQuestions });
+        // Call the scorer. The returned object now directly contains `dichotomyResults`.
+        const { dichotomyResults } = calculateResults(answersForScorer, { MBTI_Form_M: allQuestions });
+        reportedType = dichotomyResults;
 
-        // 3. UNPACK THE NESTED `dichotomyResults` OBJECT
-        reportedType = fullResults.dichotomyResults;
+        console.log("Final Dichotomy Results:", reportedType); // For debugging
 
-        console.log("Full Scoring Results:", fullResults); // For debugging and insight
-
-        // 4. DISPLAY THE RESULTS
         displayResults(reportedType);
         switchScreen(screens.results);
     }
@@ -136,14 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         questionHTML += '</div>';
         questionContainer.innerHTML = questionHTML;
+        errorMessage.textContent = ''; // Clear any previous error messages
 
-        // Add event listeners to new options
         document.querySelectorAll('input[name="answer"]').forEach(input => {
             input.addEventListener('change', (e) => {
                 document.querySelectorAll('.option-label').forEach(label => label.classList.remove('selected'));
                 e.target.parentElement.classList.add('selected');
-                nextBtn.disabled = false;
-                errorMessage.textContent = '';
             });
         });
 
@@ -153,10 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedInput) {
                 selectedInput.checked = true;
                 selectedInput.parentElement.classList.add('selected');
-                nextBtn.disabled = false;
             }
-        } else {
-            nextBtn.disabled = true;
         }
 
         updateProgress();
@@ -165,15 +154,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function nextQuestion() {
         const selected = document.querySelector('input[name="answer"]:checked');
-        if (!selected) {
-            errorMessage.textContent = "Please select an answer.";
-            return;
-        }
 
-        userAnswers[currentQuestionIndex] = {
-            questionIndex: currentQuestionIndex,
-            choice: selected.value
-        };
+        if (selected) {
+            userAnswers[currentQuestionIndex] = {
+                questionIndex: currentQuestionIndex,
+                choice: selected.value
+            };
+        } else {
+            // If nothing is selected, store null to indicate an omission.
+            userAnswers[currentQuestionIndex] = null;
+        }
 
         currentQuestionIndex++;
         if (currentQuestionIndex < allQuestions.length) {
@@ -196,11 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateNavigationButtons() {
-        if (currentQuestionIndex === 0) {
-            prevBtn.style.display = 'none';
-        } else {
-            prevBtn.style.display = 'inline-block';
-        }
+        prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'inline-block';
+        nextBtn.disabled = false; // "Next" is always enabled to allow skipping.
+        nextBtn.textContent = currentQuestionIndex === allQuestions.length - 1 ? 'Finish Assessment' : 'Next';
     }
 
     // --- RESULTS & VERIFICATION DISPLAY ---

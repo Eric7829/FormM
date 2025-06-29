@@ -1,204 +1,672 @@
 /**
  * itemParameterMatrix.js
  *
- * CALIBRATION NOTE: This matrix has been professionally recalibrated based on the
- * empirical data from the official "MBTI® Form M MANUAL SUPPLEMENT" (2009),
- * reflecting the factor analysis of a large US national sample.
+ * This matrix contains professionally calibrated 2-Parameter Logistic (2PL)
+ * Item Response Theory (IRT) parameters for MBTI Form M items, reverse engineered from
+ * thanks to my meticulous gathering of public academic research on the MBTI® Form M.
  *
  * METHODOLOGY:
- * - The primary dichotomy for each item is determined by its highest absolute factor loading.
- * - 'b' parameter (location/difficulty): Derived from the primary loading.
- *   Formula: b = -(loading * 3.0). This aligns item difficulty with its empirical
- *   relationship to the latent trait.
- * - 'a' parameter (discrimination/slope): Derived from the primary loading.
- *   Formula: a = Math.abs(loading) * 4.0. This ensures that empirically stronger
- *   items have a greater discriminating power in the model.
+ * - 'b' parameter (difficulty/location): Sourced from Evaluating the MBTI® Form M in a South African context
+ *   (Taylor & Zyl, 2011).This parameter
+ *   indicates the point on the latent trait continuum where a respondent has a
+ *   50% probability of endorsing the item's positive pole.
+ * - 'a' parameter (discrimination/slope): Calculated from the factor loadings
+ *   published in the Official MBTI Form M Manual Supplement (Schaubhut et al., 2009). The sample size was 10,000 Americans.
+ *   The conversion uses the standard formula: a = (lambda / sqrt(1 - lambda^2)) * 1.702 (McDonald, 1999). This ensures
+ *   that items with higher empirical loadings have a stronger ability to
+ *   discriminate between individuals in the IRT model.
+ * - Dichotomy: Assigned based on the item's primary factor loading.
  */
 export const itemParameters = {
-    // Q1 -> JP1: Loading = .68
-    "0": { "dichotomy": "J-P", "params": { "a": 2.72, "b": -2.04 } },
-    // Q2 -> SN1: Loading = .56
-    "1": { "dichotomy": "S-N", "params": { "a": 2.24, "b": -1.68 } },
-    // Q3 -> EI1: Loading = .76
-    "2": { "dichotomy": "E-I", "params": { "a": 3.04, "b": -2.28 } },
-    // Q4 -> JP2: Loading = .67
-    "3": { "dichotomy": "J-P", "params": { "a": 2.68, "b": -2.01 } },
-    // Q5 -> SN2: Loading = .52
-    "4": { "dichotomy": "S-N", "params": { "a": 2.08, "b": -1.56 } },
-    // Q6 -> TF1: Loading = .47
-    "5": { "dichotomy": "T-F", "params": { "a": 1.88, "b": -1.41 } },
-    // Q7 -> EI2: Loading = .58
-    "6": { "dichotomy": "E-I", "params": { "a": 2.32, "b": -1.74 } },
-    // Q8 -> JP3: Loading = .68
-    "7": { "dichotomy": "J-P", "params": { "a": 2.72, "b": 2.04 } }, // Note: Positive loading on P-pole
-    // Q9 -> SN3: Loading = .55
-    "8": { "dichotomy": "S-N", "params": { "a": 2.2, "b": 1.65 } }, // Note: Positive loading on N-pole
-    // Q10 -> EI3: Loading = .56
-    "9": { "dichotomy": "E-I", "params": { "a": 2.24, "b": -1.68 } },
-    // Q11 -> SN4: Loading = .62
-    "10": { "dichotomy": "S-N", "params": { "a": 2.48, "b": 1.86 } }, // Note: Positive loading on N-pole
-    // Q12 -> JP4: Loading = .58
-    "11": { "dichotomy": "J-P", "params": { "a": 2.32, "b": 1.74 } }, // Note: Positive loading on P-pole
-    // Q13 -> EI4: Loading = .56
-    "12": { "dichotomy": "E-I", "params": { "a": 2.24, "b": 1.68 } }, // Note: Positive loading on I-pole
-    // Q14 -> JP5: Loading = .50
-    "13": { "dichotomy": "J-P", "params": { "a": 2.0, "b": -1.5 } },
-    // Q15 -> TF2: Loading = .47
-    "14": { "dichotomy": "T-F", "params": { "a": 1.88, "b": 1.41 } }, // Note: Positive loading on F-pole
-    // Q16 -> EI5: Loading = .58
-    "15": { "dichotomy": "E-I", "params": { "a": 2.32, "b": 1.74 } }, // Note: Positive loading on I-pole
-    // Q17 -> JP6: Loading = .28
-    "16": { "dichotomy": "J-P", "params": { "a": 1.12, "b": 0.84 } }, // Note: Positive loading on P-pole
-    // Q18 -> SN5: Loading = .37
-    "17": { "dichotomy": "S-N", "params": { "a": 1.48, "b": 1.11 } }, // Note: Positive loading on N-pole
-    // Q19 -> EI6: Loading = .59
-    "18": { "dichotomy": "E-I", "params": { "a": 2.36, "b": -1.77 } },
-    // Q20 -> JP7: Loading = .50
-    "19": { "dichotomy": "J-P", "params": { "a": 2.0, "b": -1.5 } },
-    // Q21 -> TF3: Loading = .59
-    "20": { "dichotomy": "T-F", "params": { "a": 2.36, "b": 1.77 } }, // Note: Positive loading on F-pole
-    // Q22 -> SN6: Loading = .45
-    "21": { "dichotomy": "S-N", "params": { "a": 1.8, "b": 1.35 } }, // Note: Positive loading on N-pole
-    // Q23 -> EI7: Loading = .47
-    "22": { "dichotomy": "E-I", "params": { "a": 1.88, "b": -1.41 } },
-    // Q24 -> JP8: Loading = .55
-    "23": { "dichotomy": "J-P", "params": { "a": 2.2, "b": 1.65 } }, // Note: Positive loading on P-pole
-    // Q25 -> SN7: Loading = .40
-    "24": { "dichotomy": "S-N", "params": { "a": 1.6, "b": -1.2 } },
-    // Q26 -> EI8: Loading = .68
-    "25": { "dichotomy": "E-I", "params": { "a": 2.72, "b": 2.04 } }, // Note: Positive loading on I-pole
-    // Q27 -> SN8: Loading = .54
-    "26": { "dichotomy": "S-N", "params": { "a": 2.16, "b": 1.62 } },
-    // Q28 -> JP9: Loading = .68
-    "27": { "dichotomy": "J-P", "params": { "a": 2.72, "b": -2.04 } },
-    // Q29 -> TF4: Loading = .52
-    "28": { "dichotomy": "T-F", "params": { "a": 2.08, "b": 1.56 } },
-    // Q30 -> SN9: Loading = .61
-    "29": { "dichotomy": "S-N", "params": { "a": 2.44, "b": -1.83 } },
-    // Q31 -> TF5: Loading = .64
-    "30": { "dichotomy": "T-F", "params": { "a": 2.56, "b": -1.92 } },
-    // Q32 -> EI9: Loading = .79
-    "31": { "dichotomy": "E-I", "params": { "a": 3.16, "b": -2.37 } },
-    // Q33 -> TF6: Loading = .60
-    "32": { "dichotomy": "T-F", "params": { "a": 2.4, "b": -1.8 } },
-    // Q34 -> SN10: Loading = .55
-    "33": { "dichotomy": "S-N", "params": { "a": 2.2, "b": -1.65 } },
-    // Q35 -> TF7: Loading = .62
-    "34": { "dichotomy": "T-F", "params": { "a": 2.48, "b": -1.86 } },
-    // Q36 -> JP10: Loading = .47
-    "35": { "dichotomy": "J-P", "params": { "a": 1.88, "b": -1.41 } },
-    // Q37 -> TF8: Loading = .57
-    "36": { "dichotomy": "T-F", "params": { "a": 2.28, "b": 1.71 } },
-    // Q38 -> EI10: Loading = .69
-    "37": { "dichotomy": "E-I", "params": { "a": 2.76, "b": 2.07 } },
-    // Q39 -> SN11: Loading = .46
-    "38": { "dichotomy": "S-N", "params": { "a": 1.84, "b": 1.38 } },
-    // Q40 -> TF9: Loading = .60
-    "39": { "dichotomy": "T-F", "params": { "a": 2.4, "b": 1.8 } },
-    // Q41 -> JP11: Loading = .40
-    "40": { "dichotomy": "J-P", "params": { "a": 1.6, "b": -1.2 } },
-    // Q42 -> EI11: Loading = .70
-    "41": { "dichotomy": "E-I", "params": { "a": 2.8, "b": 2.1 } },
-    // Q43 -> TF10: Loading = .41
-    "42": { "dichotomy": "T-F", "params": { "a": 1.64, "b": -1.23 } },
-    // Q44 -> SN12: Loading = .55
-    "43": { "dichotomy": "S-N", "params": { "a": 2.2, "b": 1.65 } },
-    // Q45 -> TF11: Loading = .37
-    "44": { "dichotomy": "T-F", "params": { "a": 1.48, "b": -1.11 } },
-    // Q46 -> SN13: Loading = .57
-    "45": { "dichotomy": "S-N", "params": { "a": 2.28, "b": 1.71 } },
-    // Q47 -> TF12: Loading = .49
-    "46": { "dichotomy": "T-F", "params": { "a": 1.96, "b": -1.47 } },
-    // Q48 -> SN14: Loading = .60
-    "47": { "dichotomy": "S-N", "params": { "a": 2.4, "b": 1.8 } },
-    // Q49 -> TF13: Loading = .52
-    "48": { "dichotomy": "T-F", "params": { "a": 2.08, "b": -1.56 } },
-    // Q50 -> SN15: Loading = .50
-    "49": { "dichotomy": "S-N", "params": { "a": 2.0, "b": -1.5 } },
-    // Q51 -> TF14: Loading = .57
-    "50": { "dichotomy": "T-F", "params": { "a": 2.28, "b": 1.71 } },
-    // Q52 -> SN16: Loading = .44
-    "51": { "dichotomy": "S-N", "params": { "a": 1.76, "b": 1.32 } },
-    // Q53 -> TF15: Loading = .64
-    "52": { "dichotomy": "T-F", "params": { "a": 2.56, "b": 1.92 } },
-    // Q54 -> SN17: Loading = .47
-    "53": { "dichotomy": "S-N", "params": { "a": 1.88, "b": -1.41 } },
-    // Q55 -> JP12: Loading = .45
-    "54": { "dichotomy": "J-P", "params": { "a": 1.8, "b": 1.35 } },
-    // Q56 -> TF16: Loading = .59
-    "55": { "dichotomy": "T-F", "params": { "a": 2.36, "b": -1.77 } },
-    // Q57 -> EI12: Loading = .60
-    "56": { "dichotomy": "E-I", "params": { "a": 2.4, "b": 1.8 } },
-    // Q58 -> TF17: Loading = .55
-    "57": { "dichotomy": "T-F", "params": { "a": 2.2, "b": -1.65 } },
-    // Q59 -> JP13: Loading = .62
-    "58": { "dichotomy": "J-P", "params": { "a": 2.48, "b": 1.86 } },
-    // Q60 -> SN18: Loading = .56
-    "59": { "dichotomy": "S-N", "params": { "a": 2.24, "b": -1.68 } },
-    // Q61 -> TF18: Loading = .57
-    "60": { "dichotomy": "T-F", "params": { "a": 2.28, "b": 1.71 } },
-    // Q62 -> EI13: Loading = .60
-    "61": { "dichotomy": "E-I", "params": { "a": 2.4, "b": -1.8 } },
-    // Q63 -> SN19: Loading = .53
-    "62": { "dichotomy": "S-N", "params": { "a": 2.12, "b": -1.59 } },
-    // Q64 -> JP14: Loading = .41
-    "63": { "dichotomy": "J-P", "params": { "a": 1.64, "b": -1.23 } },
-    // Q65 -> SN20: Loading = .60
-    "64": { "dichotomy": "S-N", "params": { "a": 2.4, "b": 1.8 } },
-    // Q66 -> TF19: Loading = .61
-    "65": { "dichotomy": "T-F", "params": { "a": 2.44, "b": -1.83 } },
-    // Q67 -> SN21: Loading = .62
-    "66": { "dichotomy": "S-N", "params": { "a": 2.48, "b": 1.86 } },
-    // Q68 -> EI14: Loading = .52
-    "67": { "dichotomy": "E-I", "params": { "a": 2.08, "b": 2.08 } },
-    // Q69 -> SN22: Loading = .44
-    "68": { "dichotomy": "S-N", "params": { "a": 1.76, "b": 1.32 } },
-    // Q70 -> TF20: Loading = .53
-    "69": { "dichotomy": "T-F", "params": { "a": 2.12, "b": 1.59 } },
-    // Q71 -> SN23: Loading = .52
-    "70": { "dichotomy": "S-N", "params": { "a": 2.08, "b": -1.56 } },
-    // Q72 -> TF21: Loading = .51
-    "71": { "dichotomy": "T-F", "params": { "a": 2.04, "b": 1.53 } },
-    // Q73 -> SN24: Loading = .61
-    "72": { "dichotomy": "S-N", "params": { "a": 2.44, "b": -1.83 } },
-    // Q74 -> EI15: Loading = .61
-    "73": { "dichotomy": "E-I", "params": { "a": 2.44, "b": -1.83 } },
-    // Q75 -> TF22: Loading = .56
-    "74": { "dichotomy": "T-F", "params": { "a": 2.24, "b": -1.68 } },
-    // Q76 -> JP15: Loading = .70
-    "75": { "dichotomy": "J-P", "params": { "a": 2.8, "b": -2.1 } },
-    // Q77 -> EI16: Loading = .54
-    "76": { "dichotomy": "E-I", "params": { "a": 2.16, "b": 1.62 } },
-    // Q78 -> JP16: Loading = .70
-    "77": { "dichotomy": "J-P", "params": { "a": 2.8, "b": 2.1 } },
-    // Q79 -> EI17: Loading = .75
-    "78": { "dichotomy": "E-I", "params": { "a": 3.0, "b": 2.25 } },
-    // Q80 -> JP17: Loading = .65
-    "79": { "dichotomy": "J-P", "params": { "a": 2.6, "b": 1.95 } },
-    // Q81 -> EI18: Loading = .57
-    "80": { "dichotomy": "E-I", "params": { "a": 2.28, "b": -1.71 } },
-    // Q82 -> SN25: Loading = .56
-    "81": { "dichotomy": "S-N", "params": { "a": 2.24, "b": 1.68 } },
-    // Q83 -> EI19: Loading = .66
-    "82": { "dichotomy": "E-I", "params": { "a": 2.64, "b": -1.98 } },
-    // Q84 -> JP18: Loading = .67
-    "83": { "dichotomy": "J-P", "params": { "a": 2.68, "b": 1.9 } },
-    // Q85 -> EI20: Loading = .58
-    "84": { "dichotomy": "E-I", "params": { "a": 2.32, "b": -1.74 } },
-    // Q86 -> JP19: Loading = .51
-    "85": { "dichotomy": "J-P", "params": { "a": 2.04, "b": -1.53 } },
-    // Q87 -> TF23: Loading = .58
-    "86": { "dichotomy": "T-F", "params": { "a": 2.32, "b": -1.74 } },
-    // Q88 -> JP20: Loading = .67
-    "87": { "dichotomy": "J-P", "params": { "a": 2.68, "b": -2.01 } },
-    // Q89 -> TF24: Loading = .32
-    "88": { "dichotomy": "T-F", "params": { "a": 1.28, "b": 0.96 } },
-    // Q90 -> JP21: Loading = .53
-    "89": { "dichotomy": "J-P", "params": { "a": 2.12, "b": -1.59 } },
-    // Q91 -> EI21: Loading = .70
-    "90": { "dichotomy": "E-I", "params": { "a": 2.8, "b": -2.1 } },
-    // Q92 -> SN26: Loading = .30
-    "91": { "dichotomy": "S-N", "params": { "a": 1.2, "b": 1.2 } }, // This item has a notable T-F loading too
-    // Q93 -> JP22: Loading = .65
-    "92": { "dichotomy": "J-P", "params": { "a": 2.6, "b": 1.95 } },
+    "0": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.5785,
+            "b": 0.93
+        }
+    },
+    "1": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1504,
+            "b": 1.1
+        }
+    },
+    "2": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.9903,
+            "b": -0.01
+        }
+    },
+    "3": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.5361,
+            "b": -0.24
+        }
+    },
+    "4": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.0361,
+            "b": -0.75
+        }
+    },
+    "5": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 0.9063,
+            "b": 0.62
+        }
+    },
+    "6": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.2118,
+            "b": -0.09
+        }
+    },
+    "7": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.5785,
+            "b": -0.22
+        }
+    },
+    "8": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1209,
+            "b": -0.84
+        }
+    },
+    "9": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.1504,
+            "b": -0.65
+        }
+    },
+    "10": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.3449,
+            "b": -0.31
+        }
+    },
+    "11": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.2118,
+            "b": 0.72
+        }
+    },
+    "12": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.1504,
+            "b": 0.76
+        }
+    },
+    "13": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.9827,
+            "b": 0.67
+        }
+    },
+    "14": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 0.9063,
+            "b": -0.8
+        }
+    },
+    "15": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.2118,
+            "b": 0.42
+        }
+    },
+    "16": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.4964,
+            "b": 0.13
+        }
+    },
+    "17": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.6778,
+            "b": 0.88
+        }
+    },
+    "18": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.2437,
+            "b": 0.98
+        }
+    },
+    "19": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.9827,
+            "b": 0.44
+        }
+    },
+    "20": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.2437,
+            "b": 0.51
+        }
+    },
+    "21": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.8576,
+            "b": -0.4
+        }
+    },
+    "22": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 0.9063,
+            "b": 0.52
+        }
+    },
+    "23": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.1209,
+            "b": 1.18
+        }
+    },
+    "24": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.7428,
+            "b": -1.58
+        }
+    },
+    "25": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.5785,
+            "b": -0.61
+        }
+    },
+    "26": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.092,
+            "b": 1.35
+        }
+    },
+    "27": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.5785,
+            "b": 0.21
+        }
+    },
+    "28": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.0361,
+            "b": -0.4
+        }
+    },
+    "29": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.3102,
+            "b": 1.11
+        }
+    },
+    "30": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.4176,
+            "b": 1.05
+        }
+    },
+    "31": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 2.1931,
+            "b": -0.37
+        }
+    },
+    "32": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.2765,
+            "b": -0.9
+        }
+    },
+    "33": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1209,
+            "b": -0.37
+        }
+    },
+    "34": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.3449,
+            "b": -0.68
+        }
+    },
+    "35": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.9063,
+            "b": 0.51
+        }
+    },
+    "36": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.1807,
+            "b": -0.84
+        }
+    },
+    "37": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.6225,
+            "b": -0.71
+        }
+    },
+    "38": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.8817,
+            "b": -0.33
+        }
+    },
+    "39": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.2765,
+            "b": 1.32
+        }
+    },
+    "40": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.7428,
+            "b": -0.9
+        }
+    },
+    "41": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.6683,
+            "b": 0.31
+        }
+    },
+    "42": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 0.7651,
+            "b": -0.73
+        }
+    },
+    "43": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1209,
+            "b": 1.1
+        }
+    },
+    "44": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 0.6778,
+            "b": -0.87
+        }
+    },
+    "45": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1807,
+            "b": 0.23
+        }
+    },
+    "46": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 0.9567,
+            "b": 1.02
+        }
+    },
+    "47": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.2765,
+            "b": 1.43
+        }
+    },
+    "48": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.0361,
+            "b": 1.02
+        }
+    },
+    "49": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.9827,
+            "b": -0.17
+        }
+    },
+    "50": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.1807,
+            "b": -0.6
+        }
+    },
+    "51": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.8339,
+            "b": -0.67
+        }
+    },
+    "52": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.4176,
+            "b": -0.46
+        }
+    },
+    "53": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.9063,
+            "b": -0.57
+        }
+    },
+    "54": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.8576,
+            "b": 0.08
+        }
+    },
+    "55": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.2437,
+            "b": -0.11
+        }
+    },
+    "56": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.2765,
+            "b": -1.18
+        }
+    },
+    "57": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.1209,
+            "b": 1.14
+        }
+    },
+    "58": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.3449,
+            "b": -0.37
+        }
+    },
+    "59": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1504,
+            "b": 0.6
+        }
+    },
+    "60": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.1807,
+            "b": -0.05
+        }
+    },
+    "61": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.2765,
+            "b": 0.05
+        }
+    },
+    "62": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.0638,
+            "b": -0.05
+        }
+    },
+    "63": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 0.7651,
+            "b": -0.77
+        }
+    },
+    "64": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.2765,
+            "b": 0.78
+        }
+    },
+    "65": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.3102,
+            "b": -0.38
+        }
+    },
+    "66": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.3449,
+            "b": -0.7
+        }
+    },
+    "67": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.0361,
+            "b": 1.15
+        }
+    },
+    "68": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.8339,
+            "b": -0.42
+        }
+    },
+    "69": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.0638,
+            "b": -1.67
+        }
+    },
+    "70": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.0361,
+            "b": -1.5
+        }
+    },
+    "71": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.0091,
+            "b": -0.31
+        }
+    },
+    "72": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.3102,
+            "b": 0.09
+        }
+    },
+    "73": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.3102,
+            "b": 0.55
+        }
+    },
+    "74": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.1504,
+            "b": 1.05
+        }
+    },
+    "75": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.6683,
+            "b": 0.62
+        }
+    },
+    "76": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.092,
+            "b": 0.79
+        }
+    },
+    "77": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.6683,
+            "b": -1.2
+        }
+    },
+    "78": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.9299,
+            "b": 0.24
+        }
+    },
+    "79": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.4558,
+            "b": -0.98
+        }
+    },
+    "80": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.1807,
+            "b": -0.3
+        }
+    },
+    "81": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 1.1504,
+            "b": -0.66
+        }
+    },
+    "82": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.4952,
+            "b": -0.99
+        }
+    },
+    "83": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.5361,
+            "b": 0.63
+        }
+    },
+    "84": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.2118,
+            "b": -1.16
+        }
+    },
+    "85": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.0091,
+            "b": 0.21
+        }
+    },
+    "86": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 1.2118,
+            "b": 0.32
+        }
+    },
+    "87": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.5361,
+            "b": -1.05
+        }
+    },
+    "88": {
+        "dichotomy": "T-F",
+        "params": {
+            "a": 0.5749,
+            "b": 0.75
+        }
+    },
+    "89": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.0638,
+            "b": -1.01
+        }
+    },
+    "90": {
+        "dichotomy": "E-I",
+        "params": {
+            "a": 1.6683,
+            "b": 0.3
+        }
+    },
+    "91": {
+        "dichotomy": "S-N",
+        "params": {
+            "a": 0.5353,
+            "b": 0.61
+        }
+    },
+    "92": {
+        "dichotomy": "J-P",
+        "params": {
+            "a": 1.4558,
+            "b": 0.43
+        }
+    }
 };

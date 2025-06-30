@@ -272,6 +272,13 @@ input[type="radio"] {
     font-size: 0.9rem;
 }
 
+/* Add this new rule for the omissions warning box */
+.info-box.warning {
+    background-color: #fef9e7; /* A light yellow */
+    border-left-color: var(--warning);
+    color: var(--dark-grey);
+}
+
 #results-display {
     display: flex;
     justify-content: center;

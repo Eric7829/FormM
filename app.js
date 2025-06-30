@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentVerificationIndex = 0;
 
     const DICHOTOMY_ORDER = ['E-I', 'S-N', 'T-F', 'J-P'];
+    const OMISSION_THRESHOLD = 15; // Threshold for showing a warning
 
     // Descriptions for verification step
     const VERIFICATION_DESCRIPTIONS = {
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM ELEMENTS ---
     const screens = {
         welcome: document.getElementById('welcome-screen'),
+        preferenceSkill: document.getElementById('preference-skill-screen'),
         quiz: document.getElementById('quiz-screen'),
         results: document.getElementById('results-screen'),
         verification: document.getElementById('verification-screen'),
@@ -38,15 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const startBtn = document.getElementById('start-btn');
+    const continueToQuizBtn = document.getElementById('continue-to-quiz-btn');
     const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const clearSelectionBtn = document.getElementById('clear-selection-btn');
+    const skipBtn = document.getElementById('skip-btn');
     const verifyBtn = document.getElementById('verify-btn');
     const restartBtn = document.getElementById('restart-btn');
 
     const progressBar = document.getElementById('progress-bar');
     const questionContainer = document.getElementById('question-container');
-    const errorMessage = document.getElementById('error-message');
+    const omissionsWarning = document.getElementById('omissions-warning');
     const resultsDisplay = document.getElementById('results-display');
     const verificationOptions = document.getElementById('verification-options');
     const verificationTitle = document.getElementById('verification-title');
@@ -77,6 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
         activeScreen.classList.add('active');
     }
 
+    function startPreferenceExplanation() {
+        switchScreen(screens.preferenceSkill);
+    }
+
     function startQuiz() {
         currentQuestionIndex = 0;
         showQuestion();
@@ -84,6 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showResults() {
+        // Omission feedback logic
+        const omissionsCount = userAnswers.filter(a => a === null).length;
+        if (omissionsCount > OMISSION_THRESHOLD) {
+            omissionsWarning.innerHTML = `<strong>Note on Accuracy:</strong> You skipped ${omissionsCount} questions. While this is acceptable, a high number of omissions can sometimes affect the clarity of your results.`;
+            omissionsWarning.style.display = 'block';
+        } else {
+            omissionsWarning.style.display = 'none';
+        }
+
         const answersForScorer = {};
         userAnswers.forEach((answer, index) => {
             if (answer) {
@@ -131,15 +146,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         questionHTML += '</div>';
         questionContainer.innerHTML = questionHTML;
-        errorMessage.textContent = ''; // Clear any previous error messages
 
+        // Auto-advance on selection (except for the very last question)
         document.querySelectorAll('input[name="answer"]').forEach(input => {
             input.addEventListener('change', (e) => {
+                // First, visually update the selection
                 document.querySelectorAll('.option-label').forEach(label => label.classList.remove('selected'));
                 e.target.parentElement.classList.add('selected');
+
+                // Store the user's answer
+                userAnswers[currentQuestionIndex] = {
+                    questionIndex: currentQuestionIndex,
+                    choice: e.target.value
+                };
+
+                // Update the button text immediately after a selection is made
+                updateNavigationButtons();
+
+                // If it's not the last question, auto-advance after a short delay
+                if (currentQuestionIndex < allQuestions.length - 1) {
+                    setTimeout(() => advanceToNextQuestion(), 300);
+                }
+                // If it IS the last question, do NOT auto-advance. User must click "Finish Assessment" button.
+            });
+
+            // Handle clearing selection if user clicks the label of an already selected radio button
+            // This is crucial for enabling the "Skip and Finish Assessment" state on the last question
+            // after a selection was made.
+            input.parentElement.addEventListener('click', (e) => {
+                const radio = e.currentTarget.querySelector('input[type="radio"]');
+                if (radio && radio.checked && e.target !== radio) { // Ensure click wasn't directly on the radio input itself
+                    radio.checked = false;
+                    radio.parentElement.classList.remove('selected');
+                    userAnswers[currentQuestionIndex] = null; // Mark as omitted
+                    updateNavigationButtons(); // Update button text back to "Skip and Finish" if on last question
+                }
             });
         });
 
+        // Restore previous selection if exists
         const savedAnswer = userAnswers[currentQuestionIndex];
         if (savedAnswer) {
             const selectedInput = document.querySelector(`input[value="${savedAnswer.choice}"]`);
@@ -150,22 +195,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         updateProgress();
-        updateNavigationButtons();
+        updateNavigationButtons(); // Ensure button text is correct on initial load of question
     }
 
-    function nextQuestion() {
-        const selected = document.querySelector('input[name="answer"]:checked');
-
-        if (selected) {
-            userAnswers[currentQuestionIndex] = {
-                questionIndex: currentQuestionIndex,
-                choice: selected.value
-            };
+    function skipQuestion() {
+        // If it's the last question, pressing skip means finish the assessment
+        if (currentQuestionIndex === allQuestions.length - 1) {
+            // The answer for the current question is already null if not selected, or its selected value.
+            showResults();
         } else {
-            // If nothing is selected, store null to indicate an omission.
+            // For other questions, truly skip (mark as null) and advance
             userAnswers[currentQuestionIndex] = null;
+            advanceToNextQuestion();
         }
+    }
 
+    function advanceToNextQuestion() {
         currentQuestionIndex++;
         if (currentQuestionIndex < allQuestions.length) {
             showQuestion();
@@ -181,19 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // NEW function to clear the current selection
-    function clearCurrentSelection() {
-        const selectedInput = document.querySelector('input[name="answer"]:checked');
-        if (selectedInput) {
-            selectedInput.checked = false;
-        }
-        document.querySelectorAll('.option-label').forEach(label => {
-            label.classList.remove('selected');
-        });
-        userAnswers[currentQuestionIndex] = null;
-    }
-
-
     function updateProgress() {
         const progress = ((currentQuestionIndex + 1) / allQuestions.length) * 100;
         progressBar.style.width = `${progress}%`;
@@ -201,9 +233,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateNavigationButtons() {
         prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'inline-block';
-        nextBtn.disabled = false; // "Next" is always enabled to allow skipping.
-        nextBtn.textContent = currentQuestionIndex === allQuestions.length - 1 ? 'Finish Assessment' : 'Next';
+
+        if (currentQuestionIndex === allQuestions.length - 1) {
+            // On the last question:
+            if (userAnswers[currentQuestionIndex] !== null) {
+                skipBtn.textContent = 'Finish Assessment';
+            } else {
+                skipBtn.textContent = 'Skip and Finish Assessment';
+            }
+            skipBtn.classList.remove('btn-secondary'); // Ensure primary style if it was secondary from a prev page
+            skipBtn.classList.add('btn-primary');
+        } else {
+            // For all other questions:
+            skipBtn.textContent = 'Skip';
+            skipBtn.classList.remove('btn-primary');
+            skipBtn.classList.add('btn-secondary'); // Revert to secondary style for skip button
+        }
     }
+
 
     // --- RESULTS & VERIFICATION DISPLAY ---
     function displayResults(results) {
@@ -263,10 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- EVENT LISTENERS ---
-    startBtn.addEventListener('click', startQuiz);
+    startBtn.addEventListener('click', startPreferenceExplanation);
+    continueToQuizBtn.addEventListener('click', startQuiz);
     prevBtn.addEventListener('click', previousQuestion);
-    nextBtn.addEventListener('click', nextQuestion);
-    clearSelectionBtn.addEventListener('click', clearCurrentSelection);
+    skipBtn.addEventListener('click', skipQuestion);
     verifyBtn.addEventListener('click', startVerification);
     restartBtn.addEventListener('click', () => location.reload());
 });

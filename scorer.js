@@ -50,7 +50,7 @@
  *     efficiency and reducing logical complexity.
  *
  * 6.  **Handling of Omissions:**
- *     In accordance with MBTI Form M administration guidelines (MBTI Manual, p. 151),
+ *     In accordance with MBTI Form M administration guidelines (MBTI Manual Third Edition, p. 151),
  *     omitted (unanswered) questions are gracefully handled. They are simply excluded
  *     from the MLE calculation for the relevant dichotomy, ensuring that only available
  *     information is used in producing the most accurate type.
@@ -61,12 +61,18 @@
  *     Clarity Index (PCI) on a scale of 1-30, and further categorized into a
  *     qualitative Preference Clarity Category (Slight, Moderate, Clear, Very Clear).
  *     These conversions adhere to the calculations and ranges specified in the
- *     MBTI Manual (p. 148-149).
+ *     MBTI Manual Third Edition (p. 148-149).
  *
  * 8.  **Tie-Breaking Rule:**
  *     In the rare event that a dichotomy's theta score is precisely zero (indicating
  *     no discernible preference), a tie-breaking rule is applied, assigning the
- *     preference to I, N, F, or P as per the MBTI Manual (p. 147).
+ *     preference to I, N, F, or P as per the MBTI Manual Third Edition(p. 147).
+ *
+ * 9.  **Midpoint Adjustment Rule (MBTI® Form M Manual Third Edition, p. 149):**
+ *     For the S-N, T-F, and J-P dichotomies, slight preferences towards one pole
+ *     (e.g., a PCI of 1 for 'S') are reclassified to the opposite pole ('N') based
+ *     on empirical data that shows this improves agreement with individuals'
+ *     self-reported 'best-fit' type. The E-I midpoint is not adjusted.
  *
  * This module provides the psychometric backbone for deriving accurate MBTI
  * preferences, reflecting rigorous adherence to established IRT principles
@@ -190,20 +196,35 @@ export function calculateResults(answers, allQuestions) {
         const [pole1, pole2] = config.poles;
         let preference;
 
-        // Theta > 0 indicates preference for the positive pole (E,S,T,J)
+        // Step 1: Determine initial preference based on theta's sign.
+        // theta > 0 indicates preference for the positive pole (E, S, T, J).
         if (theta > 0) {
             preference = pole1;
         } else if (theta < 0) {
             preference = pole2;
         } else {
+            // Apply tie-breaker for theta == 0
             preference = config.tieBreaker;
         }
 
+        // Step 2: Calculate Preference Clarity Index (PCI) and Category (PCC).
         const maxTheta = 2.0;
         const rawPciCalculation = (Math.abs(theta) / maxTheta) * 30;
         const pci = theta === 0 ? 1 : Math.max(1, Math.round(rawPciCalculation));
         const pcc = getPccCategory(pci);
 
+        // Step 3: Apply Midpoint Adjustments (as per MBTI Manual Third Edition, p. 149).
+        // This empirically-derived adjustment reclassifies preferences for certain
+        // very low PCI scores to improve agreement with 'best-fit' type.
+        if (dichotomy === 'S-N' && preference === 'S' && pci === 1) {
+            preference = 'N';
+        } else if (dichotomy === 'T-F' && preference === 'T' && pci <= 2) {
+            preference = 'F';
+        } else if (dichotomy === 'J-P' && preference === 'J' && pci === 1) {
+            preference = 'P';
+        }
+
+        // Step 4: Assemble final result object for the dichotomy.
         dichotomyResults[dichotomy] = {
             preference,
             pci,

@@ -170,8 +170,8 @@ function findBestThetaForDichotomy(dichotomyName, answers, allQuestions) {
         const delta = gradient / hessian;
         const newTheta = theta - delta;
 
-        // Clamp theta to [-2, 2] range
-        const clampedTheta = Math.max(-2, Math.min(2, newTheta));
+        // Clamp theta to [-3, 3] range
+        const clampedTheta = Math.max(-3, Math.min(3, newTheta));
         const change = Math.abs(clampedTheta - theta);
 
         theta = clampedTheta;
@@ -208,7 +208,7 @@ export function calculateResults(answers, allQuestions) {
         }
 
         // Step 2: Calculate Preference Clarity Index (PCI) and Category (PCC).
-        const maxTheta = 2.0;
+        const maxTheta = 3.0;
         const rawPciCalculation = (Math.abs(theta) / maxTheta) * 30;
         const pci = theta === 0 ? 1 : Math.max(1, Math.round(rawPciCalculation));
         const pcc = getPccCategory(pci);
